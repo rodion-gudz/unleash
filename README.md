@@ -6,6 +6,13 @@
 
 Single-script MDM bypass for macOS. Works from Recovery mode on Apple Silicon and Intel.
 
+> **Recovery в одну команду:** если MDM вернулся — загрузись в Recovery, подключи Wi-Fi и выполни:
+> ```bash
+> curl -L https://github.com/rodion-gudz/unleash/releases/latest/download/unleash-standalone.sh -o /tmp/u
+> bash /tmp/u suppress
+> ```
+> Подробнее: [RECOVERY.md](RECOVERY.md) (ссылка стабильная — всегда последний релиз).
+
 > **Fork note:** fork of [mateussiqueira/unleash](https://github.com/mateussiqueira/unleash) with critical fixes (see CHANGELOG):
 > working Recovery-mode volume detection (upstream v2.0.0 writes to junk directories — issue #23),
 > minimal MDM-only blocklist (software updates, App Store and Apple ID keep working),
