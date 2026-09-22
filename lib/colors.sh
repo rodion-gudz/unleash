@@ -1,3 +1,7 @@
+# launchd daemons run without HOME; default it so `set -u` never aborts
+: "${HOME:=/var/root}"
+export HOME
+
 RED='\033[1;31m'
 GRN='\033[1;32m'
 BLU='\033[1;34m'

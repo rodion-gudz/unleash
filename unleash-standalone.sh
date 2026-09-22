@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
-VERSION="2.2.0"
+VERSION="2.2.1"
+# launchd daemons run without HOME; default it so `set -u` never aborts
+: "${HOME:=/var/root}"
+export HOME
+
 RED='\033[1;31m'
 GRN='\033[1;32m'
 BLU='\033[1;34m'
@@ -1054,8 +1058,8 @@ install_persist_launchdaemon() {
 		<false/>
 		<key>StandardOutPath</key>
 		<string>/var/log/unleash-heal.log</string>
-		<key>StandardErrorPath</key>
-		<string>/var/log/unleash-heal.err</string>
+	<key>StandardErrorPath</key>
+	<string>/var/log/unleash-heal.log</string>
 	</dict>
 	</plist>
 	PLIST
@@ -1569,7 +1573,7 @@ install_monitor_launchdaemon() {
     <key>StandardOutPath</key>
     <string>/var/log/unleash-monitor.log</string>
     <key>StandardErrorPath</key>
-    <string>/var/log/unleash-monitor.err</string>
+    <string>/var/log/unleash-monitor.log</string>
 </dict>
 </plist>
 PLIST

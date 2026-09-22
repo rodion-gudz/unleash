@@ -39,7 +39,7 @@ install_monitor_launchdaemon() {
     <key>StandardOutPath</key>
     <string>/var/log/unleash-monitor.log</string>
     <key>StandardErrorPath</key>
-    <string>/var/log/unleash-monitor.err</string>
+    <string>/var/log/unleash-monitor.log</string>
 </dict>
 </plist>
 PLIST

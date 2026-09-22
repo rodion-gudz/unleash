@@ -107,8 +107,8 @@ install_persist_launchdaemon() {
 		<false/>
 		<key>StandardOutPath</key>
 		<string>/var/log/unleash-heal.log</string>
-		<key>StandardErrorPath</key>
-		<string>/var/log/unleash-heal.err</string>
+	<key>StandardErrorPath</key>
+	<string>/var/log/unleash-heal.log</string>
 	</dict>
 	</plist>
 	PLIST

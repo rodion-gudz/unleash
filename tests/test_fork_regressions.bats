@@ -57,6 +57,12 @@ XML
   [[ "$flags" == *uchg* ]]
 }
 
+@test "libs load with HOME unset (launchd daemon environment)" {
+  run env -u HOME bash -c "set -euo pipefail; source '$BATS_TEST_DIRNAME/../lib/colors.sh'; source '$BATS_TEST_DIRNAME/../lib/config.sh'; source '$BATS_TEST_DIRNAME/../lib/telemetry.sh'; echo ok"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *ok* ]]
+}
+
 @test "suppress is idempotent (no duplicate domains)" {
   set -euo pipefail
   suppress_enrollment "$TEST_DIR"

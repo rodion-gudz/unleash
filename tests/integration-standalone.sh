@@ -52,6 +52,7 @@ check "setup marker written"          [ -f "$SB/fake-data/private/var/db/.AppleS
 check "no junk dirs in cwd"           bash -c "! ls -1 '$SB' | grep -qE '\[STP\]|\[INF\]'"
 check "version command works"         bash -c "bash '$STANDALONE' version | grep -q 'unleash v'"
 check "help command works"            bash -c "bash '$STANDALONE' help | grep -q 'Usage:'"
+check "runs without HOME (launchd env)" bash -c "env -u HOME bash '$STANDALONE' version | grep -q 'unleash v'"
 
 echo
 echo "PASS=$pass FAIL=$fail"
