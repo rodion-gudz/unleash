@@ -37,16 +37,18 @@ XML
   chflags nouchg "$cfg"
 }
 
-@test "blocklist excludes gdmf/configuration, includes MDM endpoints" {
+@test "blocklist excludes update-breaking domains, includes MDM endpoints" {
   set -euo pipefail
   suppress_enrollment "$TEST_DIR"
   local hosts="$TEST_DIR/private/etc/hosts"
   ! grep -q "gdmf.apple.com" "$hosts"
   ! grep -q "configuration.apple.com" "$hosts"
+  ! grep -q "gs.apple.com" "$hosts"
+  ! grep -q "xp.apple.com" "$hosts"
   grep -q "deviceenrollment.apple.com" "$hosts"
   grep -q "axm-adm-enroll.apple.com" "$hosts"
   grep -q "ws-ee-maidsvc.icloud.com" "$hosts"
-  [ "$(grep -c '^0.0.0.0 ' "$hosts")" -eq 19 ]
+  [ "$(grep -c '^0.0.0.0 ' "$hosts")" -eq 17 ]
 }
 
 @test "hosts is locked with uchg after suppress" {
@@ -67,5 +69,5 @@ XML
   set -euo pipefail
   suppress_enrollment "$TEST_DIR"
   suppress_enrollment "$TEST_DIR"
-  [ "$(grep -c '^0.0.0.0 ' "$TEST_DIR/private/etc/hosts")" -eq 19 ]
+  [ "$(grep -c '^0.0.0.0 ' "$TEST_DIR/private/etc/hosts")" -eq 17 ]
 }

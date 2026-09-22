@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-VERSION="2.2.3"
+VERSION="2.2.4"
 # launchd daemons run without HOME; default it so `set -u` never aborts
 : "${HOME:=/var/root}"
 export HOME
@@ -464,7 +464,9 @@ suppress_enrollment() {
 	#   *.appattest.apple.com (app validation, Touch ID on websites),
 	#   *.apple-mapkit.com (Maps, Managed Lost Mode), setup.icloud.com
 	#   (iCloud sign-in flows), deviceservices-external.apple.com
-	#   (MDM-initiated Activation Lock ops only).
+	#   (MDM-initiated Activation Lock ops only),
+	#   gs.apple.com + xp.apple.com (software-update TSS/flow, Apple 101555 —
+	#   blocking them breaks macOS update downloads).
 	# If something else breaks, remove the matching domain from this list.
 	local domains=(
 		iprofiles.apple.com
@@ -481,8 +483,6 @@ suppress_enrollment() {
 		albert.apple.com
 		ax.init-content.apple.com
 		init-content.apple.com
-		xp.apple.com
-		gs.apple.com
 		tb.apple.com
 		vpp.itunes.apple.com
 		ws-ee-maidsvc.icloud.com

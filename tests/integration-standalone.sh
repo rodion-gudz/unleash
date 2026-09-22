@@ -43,9 +43,11 @@ LDP="$SB/fake-data/private/var/db/com.apple.xpc.launchd/disabled.plist"
 
 check "suppress exit code 0"          [ "$rc" -eq 0 ]
 check "hosts written to target volume" [ -f "$HOSTS" ]
-check "19 domains blocked"            [ "$(grep -c '^0.0.0.0 ' "$HOSTS")" -eq 19 ]
+check "17 domains blocked"            [ "$(grep -c '^0.0.0.0 ' "$HOSTS")" -eq 17 ]
 check "no gdmf"                       bash -c "! grep -q gdmf.apple.com '$HOSTS'"
 check "no configuration"              bash -c "! grep -q configuration.apple.com '$HOSTS'"
+check "no gs"                         bash -c "! grep -q gs.apple.com '$HOSTS'"
+check "no xp"                         bash -c "! grep -q xp.apple.com '$HOSTS'"
 check "hosts locked (uchg)"           bash -c "/usr/bin/stat -f '%Sf' '$HOSTS' | grep -q uchg"
 check "4 daemons disabled"            [ "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.ManagedClient.enroll' "$LDP" 2>/dev/null)" = "true" ]
 check "setup marker written"          [ -f "$SB/fake-data/private/var/db/.AppleSetupDone" ]
