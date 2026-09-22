@@ -41,16 +41,12 @@ suppress_enrollment() {
 		echo "# Added by unleash — DEP enrollment block" >>"$hosts"
 	}
 
-	# Device-management endpoints only (source: Apple support 101555).
-	# Enrollment: deviceenrollment (DEP), mdmenrollment, iprofiles,
-	# axm-adm-enroll (DEP enrollment server), axm-adm-mdm,
-	# axm-servicediscovery (account-driven enrollment), acmdm.
-	# Management ecosystem (never used by a personal, unmanaged Mac):
-	# axm-app (ABM manage), vpp.itunes (Apps & Books licensing),
-	# ws-ee-maidsvc (Managed Apple ID lookup).
-	# Deliberately NOT blocked (Apple's own descriptions):
-	# gdmf — software update catalog; gs — TSS/updates; albert — device
-	# activation; configuration — Rosetta 2 updates; xp — updates.
+	# Broad blocklist (owner's choice — block everything that any bypass
+	# tool ever blocked, minus proven breakers). Excluded on purpose
+	# (per Apple support 101555):
+	#   gdmf.apple.com          — software update catalog (macOS updates)
+	#   configuration.apple.com — Rosetta 2 updates
+	# If something else breaks, remove the matching domain from this list.
 	local domains=(
 		iprofiles.apple.com
 		deviceenrollment.apple.com
@@ -60,6 +56,12 @@ suppress_enrollment() {
 		axm-adm-enroll.apple.com
 		axm-servicediscovery.apple.com
 		axm-app.apple.com
+		albert.apple.com
+		ax.init-content.apple.com
+		init-content.apple.com
+		xp.apple.com
+		gs.apple.com
+		tb.apple.com
 		vpp.itunes.apple.com
 		ws-ee-maidsvc.icloud.com
 	)
