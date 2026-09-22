@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.2.4] — 2026-09-22 (final)
+
+QA-hardened release; supersedes interim 2.1.1–2.2.3 releases.
+
+### Fixed
+- heal/suppress aborted on DEP records with error payloads (pipefail + grep
+  without match) and on SIP-restricted markers (`restricted` flag) — now
+  warn-and-continue.
+- launchd daemon failed (`HOME` unset + `set -u`) — home is now defaulted;
+  daemon logs unified to one file.
+- `audit`: `$2` unbound in dispatch, "0\n0" counter (`grep -c || echo 0`),
+  undefined `$cfg`, false-positive process matches (1Password/Google).
+- all 8 dispatch positionals guarded (`${2:-}` / `${3:-}`).
+- `persist`/`monitor` daemon path fixed for standalone builds.
+- `gs.apple.com` + `xp.apple.com` removed from blocklist — they broke macOS
+  update personalization/downloads ("Failed to personalize").
+
+### Changed
+- Final blocklist: 17 device-management domains. Deliberately NOT blocked
+  (per Apple support 101555): `gdmf.apple.com` (software update catalog),
+  `gs.apple.com` (TSS / update personalization), `xp.apple.com` (software
+  updates), `configuration.apple.com` (Rosetta 2).
+- Tests: 84 bats tests + e2e sandbox suite (14 checks); uchg-aware teardowns;
+  new regression tests (error-payload records, SIP-restricted markers,
+  HOME-unset, blocklist invariants).
+
+### Install
+    brew tap rodion-gudz/unleash
+    brew install rodion-gudz/unleash/unleash
+
 ## [2.1.0] — 2026-09-22 (fork)
 
 Fork of mateussiqueira/unleash. Fixes on top of upstream v2.0.0:
