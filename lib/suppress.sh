@@ -88,14 +88,19 @@ suppress_enrollment() {
 
 	step "Resetting DEP markers..."
 	mkdir -p "$cfg"
-	rm -f "$cfg/.cloudConfigHasActivationRecord" \
+	if rm -f "$cfg/.cloudConfigHasActivationRecord" \
 	      "$cfg/.cloudConfigRecordFound" \
 	      "$cfg/.cloudConfigTimerCheck" \
 	      "$cfg/.cloudConfigProfileInstalled" \
 	      "$cfg/com.apple.mdm.depnag.plist" \
-	      "$cfg/com.apple.mdm.prelogin.plist" 2>/dev/null
-	touch "$cfg/.cloudConfigRecordNotFound"
-	success "Cached record cleared; bypass markers set"
+	      "$cfg/com.apple.mdm.prelogin.plist" 2>/dev/null; then
+		success "Cached record cleared"
+	else
+		warn "DEP markers are SIP-restricted (restricted flag) — needs Recovery; skipped"
+	fi
+	touch "$cfg/.cloudConfigRecordNotFound" 2>/dev/null \
+		&& success "Bypass marker set" \
+		|| warn "Cannot write markers while booted (SIP) — run from Recovery once if needed"
 
 	step "Cleaning user-level MDM artifacts..."
 	local home
@@ -111,8 +116,9 @@ suppress_enrollment() {
 		for agent in "$home/Library/LaunchAgents/"*; do
 			[ -f "$agent" ] || continue
 			if grep -qi mdm "$agent" 2>/dev/null || grep -qi enrollment "$agent" 2>/dev/null; then
-				rm -f "$agent"
-				info "  removed LaunchAgent: $(basename "$agent")"
+				if rm -f "$agent" 2>/dev/null; then
+					info "  removed LaunchAgent: $(basename "$agent")"
+				fi
 			fi
 		done
 	done
