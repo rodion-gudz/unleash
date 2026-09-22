@@ -68,7 +68,7 @@ header() {
   local title="$1"
   local len="${#title}"
   local line
-  line=$(printf '%*s' "$((len + 4))" | tr ' ' '═')
+  line=$(printf '%*s' "$((len + 4))" '' | tr ' ' '═')
   echo ""
   echo -e "${CYAN}╔${line}╗${NC}"
   echo -e "${CYAN}║  ${title}  ║${NC}"

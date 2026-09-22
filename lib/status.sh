@@ -29,7 +29,7 @@ check_mdm_status() {
 	step "Blocked domains in hosts"
 	if [ -f "$hosts" ]; then
 		local matches
-		matches=$(grep -iE 'iprofiles|enrollment|mdm|acmdm|albert|gdmf|configuration|xp\.apple|gs\.apple|tb\.apple' "$hosts" 2>/dev/null)
+		matches=$(grep -iE 'iprofiles|enrollment|acmdm|axm-|albert|init-content|xp\.apple|gs\.apple|tb\.apple|vpp\.itunes|maidsvc|identity\.apple' "$hosts" 2>/dev/null || true)
 		if [ -n "$matches" ]; then
 			echo "$matches" | while IFS= read -r line; do
 				echo -e "  ${GRN}$line${NC}"

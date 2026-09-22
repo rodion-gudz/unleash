@@ -11,7 +11,7 @@ install_selective_block() {
   local anchor_file="${anchor_dir}/com.unleash.selective"
   mkdir -p "$anchor_dir"
 
-  > "$anchor_file"
+  : > "$anchor_file"
 
   for d in $MDM_BLOCKLIST; do
     for ip in $(host -t a "$d" 2>/dev/null | awk '/has address/{print $NF}'); do

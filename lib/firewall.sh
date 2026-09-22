@@ -7,7 +7,8 @@ pf_backup_anchor() {
 	local root="$1"
 	local anchor_file="${root}${FIREWALL_ANCHOR_DIR}/${FIREWALL_ANCHOR}"
 	[ ! -f "$anchor_file" ] && return 0
-	local backup="${anchor_file}.backup.$(date +%s)"
+	local backup
+	backup="${anchor_file}.backup.$(date +%s)"
 	cp "$anchor_file" "$backup" && info "Backed up pf anchor: $backup"
 }
 
@@ -15,7 +16,8 @@ pf_backup_conf() {
 	local root="$1"
 	local pf_conf="${root}${FIREWALL_CONF}"
 	[ ! -f "$pf_conf" ] && return 0
-	local backup="${pf_conf}.backup.$(date +%s)"
+	local backup
+	backup="${pf_conf}.backup.$(date +%s)"
 	cp "$pf_conf" "$backup" && info "Backed up pf.conf: $backup"
 }
 

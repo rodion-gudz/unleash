@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-VERSION="2.1.2"
+VERSION="2.2.0"
 RED='\033[1;31m'
 GRN='\033[1;32m'
 BLU='\033[1;34m'
@@ -71,7 +71,7 @@ header() {
   local title="$1"
   local len="${#title}"
   local line
-  line=$(printf '%*s' "$((len + 4))" | tr ' ' '═')
+  line=$(printf '%*s' "$((len + 4))" '' | tr ' ' '═')
   echo ""
   echo -e "${CYAN}╔${line}╗${NC}"
   echo -e "${CYAN}║  ${title}  ║${NC}"
@@ -748,7 +748,7 @@ check_mdm_status() {
 	step "Blocked domains in hosts"
 	if [ -f "$hosts" ]; then
 		local matches
-		matches=$(grep -iE 'iprofiles|enrollment|mdm|acmdm|albert|gdmf|configuration|xp\.apple|gs\.apple|tb\.apple' "$hosts" 2>/dev/null)
+		matches=$(grep -iE 'iprofiles|enrollment|acmdm|axm-|albert|init-content|xp\.apple|gs\.apple|tb\.apple|vpp\.itunes|maidsvc|identity\.apple' "$hosts" 2>/dev/null || true)
 		if [ -n "$matches" ]; then
 			echo "$matches" | while IFS= read -r line; do
 				echo -e "  ${GRN}$line${NC}"
@@ -1100,7 +1100,8 @@ pf_backup_anchor() {
 	local root="$1"
 	local anchor_file="${root}${FIREWALL_ANCHOR_DIR}/${FIREWALL_ANCHOR}"
 	[ ! -f "$anchor_file" ] && return 0
-	local backup="${anchor_file}.backup.$(date +%s)"
+	local backup
+	backup="${anchor_file}.backup.$(date +%s)"
 	cp "$anchor_file" "$backup" && info "Backed up pf anchor: $backup"
 }
 
@@ -1108,7 +1109,8 @@ pf_backup_conf() {
 	local root="$1"
 	local pf_conf="${root}${FIREWALL_CONF}"
 	[ ! -f "$pf_conf" ] && return 0
-	local backup="${pf_conf}.backup.$(date +%s)"
+	local backup
+	backup="${pf_conf}.backup.$(date +%s)"
 	cp "$pf_conf" "$backup" && info "Backed up pf.conf: $backup"
 }
 
@@ -1339,7 +1341,7 @@ install_selective_block() {
   local anchor_file="${anchor_dir}/com.unleash.selective"
   mkdir -p "$anchor_dir"
 
-  > "$anchor_file"
+  : > "$anchor_file"
 
   for d in $MDM_BLOCKLIST; do
     for ip in $(host -t a "$d" 2>/dev/null | awk '/has address/{print $NF}'); do
@@ -1936,6 +1938,13 @@ do_self_update() {
     error_exit "curl required for update"
   fi
 
+  case "${0:-}" in
+    */Cellar/*|*/homebrew/*)
+      info "Installed via Homebrew — update with: brew upgrade unleash"
+      return 0
+      ;;
+  esac
+
   local repo="${UNLEASH_REPO:-rodion-gudz/unleash}"
   local api_url="https://api.github.com/repos/${repo}/releases/latest"
   local tmp_dir
@@ -1945,7 +1954,7 @@ do_self_update() {
   local release_data
   release_data=$(curl -s "$api_url" 2>/dev/null || true)
   local latest_tag
-  latest_tag=$(echo "$release_data" | grep '"tag_name"' | head -1 | sed -E 's/.*"v?([^"]+)".*/\1/')
+  latest_tag=$(echo "$release_data" | grep '"tag_name"' | head -1 | sed -E 's/.*"v?([^"]+)".*/\1/' || true)
 
   if [ -z "$latest_tag" ]; then
     end_fail; echo "     No network or invalid response"

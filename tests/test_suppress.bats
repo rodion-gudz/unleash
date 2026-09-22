@@ -14,6 +14,7 @@ setup() {
 }
 
 teardown() {
+  chflags -R nouchg "$TEST_DIR" 2>/dev/null || true
   rm -rf "$TEST_DIR"
 }
 

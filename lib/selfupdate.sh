@@ -36,6 +36,13 @@ do_self_update() {
     error_exit "curl required for update"
   fi
 
+  case "${0:-}" in
+    */Cellar/*|*/homebrew/*)
+      info "Installed via Homebrew — update with: brew upgrade unleash"
+      return 0
+      ;;
+  esac
+
   local repo="${UNLEASH_REPO:-rodion-gudz/unleash}"
   local api_url="https://api.github.com/repos/${repo}/releases/latest"
   local tmp_dir
@@ -45,7 +52,7 @@ do_self_update() {
   local release_data
   release_data=$(curl -s "$api_url" 2>/dev/null || true)
   local latest_tag
-  latest_tag=$(echo "$release_data" | grep '"tag_name"' | head -1 | sed -E 's/.*"v?([^"]+)".*/\1/')
+  latest_tag=$(echo "$release_data" | grep '"tag_name"' | head -1 | sed -E 's/.*"v?([^"]+)".*/\1/' || true)
 
   if [ -z "$latest_tag" ]; then
     end_fail; echo "     No network or invalid response"

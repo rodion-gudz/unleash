@@ -14,6 +14,7 @@ setup() {
 }
 
 teardown() {
+  chflags -R nouchg "$TEST_DIR" 2>/dev/null || true
   rm -rf "$TEST_DIR"
 }
 
@@ -29,6 +30,7 @@ teardown() {
 }
 
 @test "heal re-applies when hosts block missing" {
+  chflags nouchg "$TEST_DIR/private/etc/hosts" 2>/dev/null || true
   > "$TEST_DIR/private/etc/hosts"
   heal_suppress "$TEST_DIR" 2>/dev/null || true
   run grep -c "iprofiles.apple.com" "$TEST_DIR/private/etc/hosts"
