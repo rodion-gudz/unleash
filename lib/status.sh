@@ -149,9 +149,9 @@ deep_status() {
 
 	step "Running MDM Processes"
 	local procs
-	procs=$(ps aux 2>/dev/null | grep -iE "mdm|managedclient|activation" | grep -v grep || true)
+	procs=$(ps -axo pid=,comm= 2>/dev/null | awk '$2 ~ /mdmclient|ManagedClient|cloudconfigurationd|enrollmentd/ {print "  " $2 " (PID " $1 ")"}' || true)
 	if [ -n "$procs" ]; then
-		echo "$procs" | awk '{print "  " $11 " (PID " $2 ")"}'
+		echo "$procs"
 	else
 		info "No MDM processes running"
 	fi
@@ -173,9 +173,9 @@ deep_status() {
 
 	step "Overall Assessment"
 	local risk="LOW"
-	[ "$(sudo profiles -C -output=xml 2>/dev/null | grep -c "ProfileDisplayName" || echo 0)" -gt 0 ] && risk="MEDIUM"
-	ps aux 2>/dev/null | grep -qiE "mdm|managedclient" && risk="HIGH"
-	[ -f "$cfg/.cloudConfigRecordFound" ] && risk="CRITICAL"
+	[ "$(sudo profiles -C -output=xml 2>/dev/null | grep -c "ProfileDisplayName" || true)" -gt 0 ] && risk="MEDIUM"
+	ps -axo comm= 2>/dev/null | grep -qiE "mdmclient|managedclient|cloudconfigurationd|enrollmentd" && risk="HIGH"
+	[ -f "/private/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound" ] && risk="CRITICAL"
 
 	case "$risk" in
 		LOW) echo -e "  ${GRN}Risk: $risk — Device appears clean${NC}" ;;
@@ -193,13 +193,14 @@ deep_status_json() {
 
 	local profile_count=0
 	if command -v profiles &>/dev/null; then
-		profile_count=$(sudo profiles -C -output=xml 2>/dev/null | grep -c "ProfileDisplayName" || echo 0)
+		profile_count=$(sudo profiles -C -output=xml 2>/dev/null | grep -c "ProfileDisplayName" || true)
 	fi
 	json="${json}  \"profile_count\": $profile_count,\n"
 
 	local enroll_state="unknown"
 	if command -v profiles &>/dev/null; then
-		enroll_state=$(sudo profiles status -type enrollment 2>/dev/null | head -1 | xargs || echo "unknown")
+		enroll_state=$(sudo profiles status -type enrollment 2>/dev/null | head -1 | xargs || true)
+		[ -n "$enroll_state" ] || enroll_state="unknown"
 	fi
 	enroll_state="${enroll_state//\"/\\\"}"
 	json="${json}  \"enrollment_state\": \"${enroll_state}\",\n"
@@ -211,7 +212,7 @@ deep_status_json() {
 	json="${json}  \"mdm_certificates\": $mdm_certs,\n"
 
 	local running_procs=0
-	running_procs=$(ps aux 2>/dev/null | grep -ciE "mdm|managedclient|activation" || true)
+	running_procs=$(ps -axo comm= 2>/dev/null | grep -ciE "mdmclient|managedclient|cloudconfigurationd|enrollmentd" || true)
 	running_procs=$((running_procs - 1))
 	[ "$running_procs" -lt 0 ] && running_procs=0
 	json="${json}  \"running_mdm_processes\": $running_procs,\n"

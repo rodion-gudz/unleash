@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-VERSION="2.2.1"
+VERSION="2.2.3"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LIB_DIR="$SCRIPT_DIR/lib"
@@ -372,7 +372,7 @@ cmd_monitor() {
   while [ $# -gt 0 ]; do
     case "$1" in
       install|uninstall) args+=("$1"); shift ;;
-      --webhook) webhook="$2"; shift 2 ;;
+      --webhook) webhook="${2:-}"; shift 2 ;;
       *) args+=("$1"); shift ;;
     esac
   done
@@ -537,7 +537,7 @@ parse_global_opts() {
 		case "$1" in
 			--verbose) VERBOSE=true; shift ;;
 			--dry-run) DRY_RUN=true; shift ;;
-			--log-file) LOG_FILE="$2"; shift 2 ;;
+			--log-file) LOG_FILE="${2:-}"; shift 2 ;;
 			*) args+=("$1"); shift ;;
 		esac
 	done
@@ -564,7 +564,7 @@ main() {
 		firewall|fw)      cmd_firewall ;;
 		firewall-off|fw-off) cmd_firewall_off ;;
 		harden)           cmd_harden ;;
-		audit)            cmd_audit "$2" ;;
+		audit)            cmd_audit "${2:-}" ;;
 		whitelist|wl)     cmd_whitelist ;;
 		backup)           cmd_backup ;;
 		restore)          cmd_restore ;;
@@ -582,13 +582,13 @@ main() {
 		version|-v|--version) cmd_version ;;
 		init)            cmd_init ;;
 		suggest)         cmd_suggest ;;
-		remediate)       cmd_remediate "$2" ;;
-		predict)         cmd_predict "$2" ;;
-		telemetry)       telemetry_opt_in "$2" ;;
+		remediate)       cmd_remediate "${2:-}" ;;
+		predict)         cmd_predict "${2:-}" ;;
+		telemetry)       telemetry_opt_in "${2:-}" ;;
 		demo)             run_demo ;;
 		update)           do_self_update ;;
 		uninstall)        do_uninstall ;;
-		report)           generate_report "$2" ;;
+		report)           generate_report "${2:-}" ;;
 		config)           cmd_config "$@" ;;
 		vpn-kill)         vpn_kill_install "$@" ;;
 		vpn-kill-remove)  vpn_kill_remove ;;
@@ -600,7 +600,7 @@ main() {
 			install_monitor_launchdaemon ""
 			success "Reinstall complete"
 			;;
-		discord-bot)          cmd_discord_bot_install "$2" "$3" ;;
+		discord-bot)          cmd_discord_bot_install "${2:-}" "${3:-}" ;;
 		discord-bot-stop)     cmd_discord_bot_stop ;;
 		discord-bot-status)   cmd_discord_bot_status ;;
 		help|-h|--help)   show_help; exit 0 ;;

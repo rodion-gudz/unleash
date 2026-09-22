@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-VERSION="2.2.1"
+VERSION="2.2.3"
 # launchd daemons run without HOME; default it so `set -u` never aborts
 : "${HOME:=/var/root}"
 export HOME
@@ -872,9 +872,9 @@ deep_status() {
 
 	step "Running MDM Processes"
 	local procs
-	procs=$(ps aux 2>/dev/null | grep -iE "mdm|managedclient|activation" | grep -v grep || true)
+	procs=$(ps -axo pid=,comm= 2>/dev/null | awk '$2 ~ /mdmclient|ManagedClient|cloudconfigurationd|enrollmentd/ {print "  " $2 " (PID " $1 ")"}' || true)
 	if [ -n "$procs" ]; then
-		echo "$procs" | awk '{print "  " $11 " (PID " $2 ")"}'
+		echo "$procs"
 	else
 		info "No MDM processes running"
 	fi
@@ -896,9 +896,9 @@ deep_status() {
 
 	step "Overall Assessment"
 	local risk="LOW"
-	[ "$(sudo profiles -C -output=xml 2>/dev/null | grep -c "ProfileDisplayName" || echo 0)" -gt 0 ] && risk="MEDIUM"
-	ps aux 2>/dev/null | grep -qiE "mdm|managedclient" && risk="HIGH"
-	[ -f "$cfg/.cloudConfigRecordFound" ] && risk="CRITICAL"
+	[ "$(sudo profiles -C -output=xml 2>/dev/null | grep -c "ProfileDisplayName" || true)" -gt 0 ] && risk="MEDIUM"
+	ps -axo comm= 2>/dev/null | grep -qiE "mdmclient|managedclient|cloudconfigurationd|enrollmentd" && risk="HIGH"
+	[ -f "/private/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound" ] && risk="CRITICAL"
 
 	case "$risk" in
 		LOW) echo -e "  ${GRN}Risk: $risk — Device appears clean${NC}" ;;
@@ -916,13 +916,14 @@ deep_status_json() {
 
 	local profile_count=0
 	if command -v profiles &>/dev/null; then
-		profile_count=$(sudo profiles -C -output=xml 2>/dev/null | grep -c "ProfileDisplayName" || echo 0)
+		profile_count=$(sudo profiles -C -output=xml 2>/dev/null | grep -c "ProfileDisplayName" || true)
 	fi
 	json="${json}  \"profile_count\": $profile_count,\n"
 
 	local enroll_state="unknown"
 	if command -v profiles &>/dev/null; then
-		enroll_state=$(sudo profiles status -type enrollment 2>/dev/null | head -1 | xargs || echo "unknown")
+		enroll_state=$(sudo profiles status -type enrollment 2>/dev/null | head -1 | xargs || true)
+		[ -n "$enroll_state" ] || enroll_state="unknown"
 	fi
 	enroll_state="${enroll_state//\"/\\\"}"
 	json="${json}  \"enrollment_state\": \"${enroll_state}\",\n"
@@ -934,7 +935,7 @@ deep_status_json() {
 	json="${json}  \"mdm_certificates\": $mdm_certs,\n"
 
 	local running_procs=0
-	running_procs=$(ps aux 2>/dev/null | grep -ciE "mdm|managedclient|activation" || true)
+	running_procs=$(ps -axo comm= 2>/dev/null | grep -ciE "mdmclient|managedclient|cloudconfigurationd|enrollmentd" || true)
 	running_procs=$((running_procs - 1))
 	[ "$running_procs" -lt 0 ] && running_procs=0
 	json="${json}  \"running_mdm_processes\": $running_procs,\n"
@@ -3415,7 +3416,7 @@ cmd_monitor() {
   while [ $# -gt 0 ]; do
     case "$1" in
       install|uninstall) args+=("$1"); shift ;;
-      --webhook) webhook="$2"; shift 2 ;;
+      --webhook) webhook="${2:-}"; shift 2 ;;
       *) args+=("$1"); shift ;;
     esac
   done
@@ -3580,7 +3581,7 @@ parse_global_opts() {
 		case "$1" in
 			--verbose) VERBOSE=true; shift ;;
 			--dry-run) DRY_RUN=true; shift ;;
-			--log-file) LOG_FILE="$2"; shift 2 ;;
+			--log-file) LOG_FILE="${2:-}"; shift 2 ;;
 			*) args+=("$1"); shift ;;
 		esac
 	done
@@ -3607,7 +3608,7 @@ main() {
 		firewall|fw)      cmd_firewall ;;
 		firewall-off|fw-off) cmd_firewall_off ;;
 		harden)           cmd_harden ;;
-		audit)            cmd_audit "$2" ;;
+		audit)            cmd_audit "${2:-}" ;;
 		whitelist|wl)     cmd_whitelist ;;
 		backup)           cmd_backup ;;
 		restore)          cmd_restore ;;
@@ -3625,13 +3626,13 @@ main() {
 		version|-v|--version) cmd_version ;;
 		init)            cmd_init ;;
 		suggest)         cmd_suggest ;;
-		remediate)       cmd_remediate "$2" ;;
-		predict)         cmd_predict "$2" ;;
-		telemetry)       telemetry_opt_in "$2" ;;
+		remediate)       cmd_remediate "${2:-}" ;;
+		predict)         cmd_predict "${2:-}" ;;
+		telemetry)       telemetry_opt_in "${2:-}" ;;
 		demo)             run_demo ;;
 		update)           do_self_update ;;
 		uninstall)        do_uninstall ;;
-		report)           generate_report "$2" ;;
+		report)           generate_report "${2:-}" ;;
 		config)           cmd_config "$@" ;;
 		vpn-kill)         vpn_kill_install "$@" ;;
 		vpn-kill-remove)  vpn_kill_remove ;;
@@ -3643,7 +3644,7 @@ main() {
 			install_monitor_launchdaemon ""
 			success "Reinstall complete"
 			;;
-		discord-bot)          cmd_discord_bot_install "$2" "$3" ;;
+		discord-bot)          cmd_discord_bot_install "${2:-}" "${3:-}" ;;
 		discord-bot-stop)     cmd_discord_bot_stop ;;
 		discord-bot-status)   cmd_discord_bot_status ;;
 		help|-h|--help)   show_help; exit 0 ;;
