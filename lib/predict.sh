@@ -33,7 +33,8 @@ H4C:School District Managed
 VMW:VMware Workspace ONE
 M5K:Addigy Managed
 W4P:Kandji Managed
-ORGS)
+ORGS
+)
 
   local match
   match=$(echo "$known_orgs" | grep "^$serial_prefix:" || true)

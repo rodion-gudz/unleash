@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.1.0] — 2026-09-22 (fork)
+
+Fork of mateussiqueira/unleash. Fixes on top of upstream v2.0.0:
+
+### Fixed
+- **Critical**: `resolve_data_volume` leaked log output into the captured
+  variable (`data_mount=$(...)`), so every Recovery command (bypass,
+  suppress, heal, persist, firewall, backup) wrote to junk directories
+  instead of the target Data volume and reported fake success.
+  All logging now goes to stderr. (Upstream issue #23)
+- `predict`: broken heredoc (`ORGS)`) made the command unusable.
+- `SCRIPT_DIR` / `LIB_DIR` unbound-variable crashes in standalone builds
+  (heal, monitor, doctor) — now guarded with `${VAR:-}`.
+- self-update: downloads `unleash-standalone.sh` (previously it replaced a
+  standalone install with the modular entry script, which then failed with
+  "Library not found"); repo now points to this fork.
+
+### Changed
+- Blocklist reduced to MDM enrollment endpoints only:
+  deviceenrollment / mdmenrollment / iprofiles / acmdm / axm-adm-mdm /
+  axm-adm-enroll. `gdmf.apple.com`, `gs.apple.com`, `albert.apple.com`,
+  `configuration/xp/tb/vpp.itunes` are no longer blocked — they break
+  software updates, App Store and activation.
+- `/etc/hosts` is locked with `chflags uchg` after blocking (unlocked
+  before edits). Manual unlock: `sudo chflags nouchg /etc/hosts`.
+- `examples/build-standalone.sh` now bundles all libs (init, suggest,
+  remediate, telemetry, predict, discord were missing).
+
 ## [2.0.0] — 2026-06-20
 
 ### Added

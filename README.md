@@ -6,6 +6,11 @@
 
 Single-script MDM bypass for macOS. Works from Recovery mode on Apple Silicon and Intel.
 
+> **Fork note:** fork of [mateussiqueira/unleash](https://github.com/mateussiqueira/unleash) with critical fixes (see CHANGELOG):
+> working Recovery-mode volume detection (upstream v2.0.0 writes to junk directories — issue #23),
+> minimal MDM-only blocklist (software updates, App Store and Apple ID keep working),
+> `chflags uchg` lock on `/etc/hosts`, predictable self-update.
+
 I started this because the original bypass-mdm project had five different scripts (v2, v3, express, dualboot.sh, verify.sh), each with slightly different options and none of them handling the full problem after Migration Assistant. This replaces all of them in one file.
 
 ## Quick start

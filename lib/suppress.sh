@@ -35,26 +35,23 @@ suppress_enrollment() {
 
 	step "Blocking enrollment domains (Data volume hosts)..."
 	[ -f "$hosts" ] || { mkdir -p "$(dirname "$hosts")"; touch "$hosts"; }
+	chflags nouchg "$hosts" 2>/dev/null || true
 	grep -q "Added by unleash" "$hosts" 2>/dev/null || {
 		echo "" >>"$hosts"
 		echo "# Added by unleash — DEP enrollment block" >>"$hosts"
 	}
 
+	# MDM enrollment endpoints only. Deliberately NOT blocked:
+	# gdmf.apple.com (software updates), gs.apple.com (App Store),
+	# albert.apple.com (activation), configuration/xp/tb/vpp —
+	# blocking them breaks updates, App Store and Apple ID.
 	local domains=(
 		iprofiles.apple.com
 		deviceenrollment.apple.com
 		mdmenrollment.apple.com
 		acmdm.apple.com
 		axm-adm-mdm.apple.com
-		albert.apple.com
-		gdmf.apple.com
-		ax.init-content.apple.com
-		init-content.apple.com
-		configuration.apple.com
-		xp.apple.com
-		gs.apple.com
-		tb.apple.com
-		vpp.itunes.apple.com
+		axm-adm-enroll.apple.com
 	)
 	[ -n "$mdm_host" ] && domains+=("$mdm_host")
 
@@ -65,6 +62,8 @@ suppress_enrollment() {
 		printf '0.0.0.0 %s\n::      %s\n' "$d" "$d" >>"$hosts"
 		success "blocked $d"
 	done
+	chflags uchg "$hosts" 2>/dev/null && success "hosts locked (uchg — survives updates)" \
+		|| warn "could not lock hosts"
 
 	step "Resetting DEP markers..."
 	mkdir -p "$cfg"

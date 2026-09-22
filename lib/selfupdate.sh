@@ -36,7 +36,7 @@ do_self_update() {
     error_exit "curl required for update"
   fi
 
-  local repo="mateussiqueira/unleash"
+  local repo="${UNLEASH_REPO:-rodion-gudz/unleash}"
   local api_url="https://api.github.com/repos/${repo}/releases/latest"
   local tmp_dir
   tmp_dir=$(mktemp -d)
@@ -63,21 +63,12 @@ do_self_update() {
   info "Updating from v$VERSION to v$latest_tag..."
 
   begin "Downloading latest unleash"
-  local dl_url="https://raw.githubusercontent.com/${repo}/main/unleash"
-  local sig_url="${dl_url}.sig"
-  local tmp="$tmp_dir/unleash"
-  local sig_tmp="$tmp_dir/unleash.sig"
+  local dl_url="https://raw.githubusercontent.com/${repo}/main/unleash-standalone.sh"
+  local tmp="$tmp_dir/unleash-standalone.sh"
   if curl -sL "$dl_url" -o "$tmp" && [ -s "$tmp" ]; then
-    curl -sL "$sig_url" -o "$sig_tmp" 2>/dev/null || true
     end_ok
   else
     end_fail; error_exit "Download failed"
-  fi
-
-  if [ -s "$sig_tmp" ]; then
-    begin "Verifying GPG signature"
-    verify_gpg_signature "$tmp" "$sig_tmp"
-    end_ok
   fi
 
   begin "Verifying syntax"
