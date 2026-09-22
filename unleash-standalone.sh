@@ -451,10 +451,16 @@ suppress_enrollment() {
 	}
 
 	# Broad blocklist (owner's choice — block everything that any bypass
-	# tool ever blocked, minus proven breakers). Excluded on purpose
-	# (per Apple support 101555):
+	# tool ever blocked, plus every device-management host from Apple
+	# support 101555 that is safe to block, minus proven breakers).
+	# Excluded on purpose:
 	#   gdmf.apple.com          — software update catalog (macOS updates)
 	#   configuration.apple.com — Rosetta 2 updates
+	# NOT blocked (would break personal use / no nag benefit):
+	#   *.appattest.apple.com (app validation, Touch ID on websites),
+	#   *.apple-mapkit.com (Maps, Managed Lost Mode), setup.icloud.com
+	#   (iCloud sign-in flows), deviceservices-external.apple.com
+	#   (MDM-initiated Activation Lock ops only).
 	# If something else breaks, remove the matching domain from this list.
 	local domains=(
 		iprofiles.apple.com
@@ -463,8 +469,11 @@ suppress_enrollment() {
 		acmdm.apple.com
 		axm-adm-mdm.apple.com
 		axm-adm-enroll.apple.com
+		axm-adm-scep.apple.com
 		axm-servicediscovery.apple.com
 		axm-app.apple.com
+		icons.axm-usercontent-apple.com
+		identity.apple.com
 		albert.apple.com
 		ax.init-content.apple.com
 		init-content.apple.com
@@ -1964,6 +1973,13 @@ do_self_update() {
   fi
 
   local target="${0:-unleash}"
+  case "$target" in
+    */Cellar/*|*/homebrew/*)
+      info "Installed via Homebrew — update with: brew upgrade unleash"
+      rm -rf "$tmp_dir"
+      return 0
+      ;;
+  esac
   if [ ! -w "$target" ]; then
     info "$target not writable, trying sudo..."
     cp "$tmp" "$target" 2>/dev/null || sudo cp "$tmp" "$target" 2>/dev/null || {

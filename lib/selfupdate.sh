@@ -79,6 +79,13 @@ do_self_update() {
   fi
 
   local target="${0:-unleash}"
+  case "$target" in
+    */Cellar/*|*/homebrew/*)
+      info "Installed via Homebrew — update with: brew upgrade unleash"
+      rm -rf "$tmp_dir"
+      return 0
+      ;;
+  esac
   if [ ! -w "$target" ]; then
     info "$target not writable, trying sudo..."
     cp "$tmp" "$target" 2>/dev/null || sudo cp "$tmp" "$target" 2>/dev/null || {
