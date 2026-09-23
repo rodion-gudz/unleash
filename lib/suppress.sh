@@ -134,6 +134,14 @@ suppress_enrollment() {
 		com.apple.activationd; do
 		$PB -c "Add :$label bool true" "$ldp" 2>/dev/null \
 			|| $PB -c "Set :$label true" "$ldp" 2>/dev/null || true
+		case "$ldp" in
+			"/private/var/db/com.apple.xpc.launchd/disabled.plist"|"/System/Volumes/Data/private/var/db/com.apple.xpc.launchd/disabled.plist")
+				# Live system: also update launchd's in-memory disabled DB.
+				# Otherwise launchd rewrites the plist later and drops this
+				# PlistBuddy-only override (seen on macOS 27).
+				launchctl disable "system/$label" 2>/dev/null || true
+				;;
+		esac
 		info "disabled $label"
 	done
 	success "Enrollment daemons disabled (4 overrides)"
