@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.5] — 2026-09-23
+
+### Fixed
+- macOS 27 field issue: after the 26.x→27 upgrade, launchd rewrote
+  `disabled.plist` and dropped the PlistBuddy-only
+  `com.apple.ManagedClient.enroll` override. Live-system heal/suppress now
+  also calls `launchctl disable` (updates launchd's in-memory disabled DB),
+  so all 4 daemon overrides persist. Recovery path unchanged (PlistBuddy on
+  the offline volume).
+
 ## [2.2.4] — 2026-09-22 (final)
 
 QA-hardened release; supersedes interim 2.1.1–2.2.3 releases.
